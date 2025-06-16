@@ -1,0 +1,85 @@
+---------------------------------------------------------
+CODING FORM CARI MASUK | EXCEL & VBA TUTORIAL 
+---------------------------------------------------------
+
+Option Explicit
+
+Private Sub CBBERDASARKAN_Change()
+If Me.CBBERDASARKAN.Value = "Bulan" Then
+Me.TXTTAHUN.Visible = True
+Me.Label12.Visible = True
+Else
+Me.TXTTAHUN.Visible = False
+Me.Label12.Visible = False
+End If
+End Sub
+
+Private Sub CMDCARI1_Click()
+On Error GoTo EXCELVBA
+Dim DBCARIDATA As Object
+Set DBCARIDATA = Sheet2
+Sheet9.Range("J5").Value = Me.CBBERDASARKAN.Value
+Sheet9.Range("J6").Value = Me.TXTKATAKUNCI.Value
+Sheet9.Range("K6").Value = Me.TXTTAHUN.Value
+
+DBCARIDATA.Range("A5").CurrentRegion.AdvancedFilter Action:=xlFilterCopy, CriteriaRange:= _
+Sheet9.Range("J5:K6"), Copytorange:=Sheet9.Range("A5:H5"), Unique:=False
+Call HasilCari
+Call HitungTotal
+Exit Sub
+EXCELVBA:
+Call MsgBox("Data tidak ditemukan", vbInformation, "Cari Data")
+
+End Sub
+Private Sub HasilCari()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet9.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet9.Range("A6:A1000000"))
+If DBBARANG = 0 Then
+FORMMASUK.TABELDATA.RowSource = ""
+Else
+FORMMASUK.TABELDATA.RowSource = "CARIMASUK!A6:H" & iRow
+End If
+End Sub
+
+Private Sub CMDRESET1_Click()
+Sheet9.Range("J5").Value = ""
+Sheet9.Range("J6").Value = ""
+Sheet9.Range("K6").Value = ""
+Me.CBBERDASARKAN.Value = ""
+Me.TXTKATAKUNCI.Value = ""
+Me.TXTTAHUN.Value = ""
+Call AmbilData
+Call HitungTotal
+End Sub
+
+Private Sub UserForm_Initialize()
+With CBBERDASARKAN
+.AddItem "Nama Barang"
+.AddItem "Bulan"
+End With
+Me.TXTTAHUN.Visible = False
+Me.Label12.Visible = False
+End Sub
+Private Sub HitungTotal()
+Dim TOTALBARANG   As Double
+Dim r As Long
+TOTALBARANG = 0
+For r = 0 To FORMMASUK.TABELDATA.ListCount - 1
+TOTALBARANG = TOTALBARANG + FORMMASUK.TABELDATA.List(r, 7)
+Next r
+FORMMASUK.LBITEM.Caption = TOTALBARANG
+
+End Sub
+Private Sub AmbilData()
+Dim DBMASUK As Long
+Dim iRow As Long
+iRow = Sheet2.Range("A" & Rows.Count).End(xlUp).Row
+DBMASUK = Application.WorksheetFunction.CountA(Sheet2.Range("A6:A100000"))
+If DBMASUK = 0 Then
+FORMMASUK.TABELDATA.RowSource = ""
+Else
+FORMMASUK.TABELDATA.RowSource = "BarangMasuk!A6:H" & iRow
+End If
+End Sub

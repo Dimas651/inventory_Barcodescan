@@ -1,0 +1,222 @@
+---------------------------------------------------------
+CODING FORM BARANG | EXCEL & VBA TUTORIAL 
+---------------------------------------------------------
+Option Explicit
+Dim GR1, GR2 As Chart
+Dim Gambar1, Gambar2 As String
+
+Private Sub CMDADDJENIS_Click()
+FORMJENIS.Show
+End Sub
+
+Private Sub CMDADDSATUAN_Click()
+FORMSATUAN.Show
+End Sub
+
+Private Sub CMDSAVE_Click()
+Dim DBBARANG As Object
+Set DBBARANG = Sheet1.Range("A100000").End(xlUp)
+
+If Me.TXTKODEBARANG.Value = "" _
+Or Me.TXTNAMA.Value = "" _
+Or Me.CBJENIS.Value = "" _
+Or Me.CBSATUAN.Value = "" _
+Or Me.TXTREORDER.Value = "" _
+Or Me.TXTHARGA.Value = "" _
+Or Me.TXTJUAL.Value = "" _
+Or Me.TXTPROFIT.Value = "" Then
+Call MsgBox("Harap isi semua data barang", vbInformation, "Data Barang")
+Else
+
+DBBARANG.Offset(1, 0).Value = "=ROW()-ROW($A$5)"
+DBBARANG.Offset(1, 1).Value = Me.TXTKODEBARANG.Value
+DBBARANG.Offset(1, 2).Value = Me.TXTNAMA.Value
+DBBARANG.Offset(1, 3).Value = Me.CBJENIS.Value
+DBBARANG.Offset(1, 4).Value = Me.CBSATUAN.Value
+DBBARANG.Offset(1, 5).Value = 0
+DBBARANG.Offset(1, 6).Value = Me.TXTREORDER.Value
+Sheet5.Range("H6").Copy
+DBBARANG.Offset(1, 7).PasteSpecial Paste:=xlPasteFormulas, Operation:=xlNone, _
+SkipBlanks:=False, Transpose:=False
+Application.CutCopyMode = False
+DBBARANG.Offset(1, 8).Value = CDec(Me.TXTHARGA.Value)
+DBBARANG.Offset(1, 9).Value = CDec(Me.TXTJUAL.Value)
+DBBARANG.Offset(1, 10).Value = CDec(Me.TXTPROFIT.Value)
+
+Call AmbilData
+Call BukaGrafik
+Call MsgBox("Data barang berhasil disimpan", vbInformation, "Data Barang")
+
+Me.TXTKODEBARANG.Value = ""
+Me.TXTNAMA.Value = ""
+Me.CBJENIS.Value = ""
+Me.CBSATUAN.Value = ""
+Me.TXTSTOK.Value = ""
+Me.TXTREORDER.Value = ""
+Me.TXTSTATUS.Value = ""
+Me.TXTHARGA.Value = ""
+Me.TXTJUAL.Value = ""
+Me.TXTPROFIT.Value = ""
+End If
+End Sub
+
+
+Private Sub CMDUPDATE_Click()
+'Perintah membuat variable data yang akan diubah
+Dim UBAHDATA As Object
+Set UBAHDATA = Sheet1.Range("A6:A1000000").Find(What:=FORMTABELBARANG.TXTNOMOR.Value, LookIn:=xlValues)
+
+'Perintah memastikan data yang diubah sudah dipilih
+If FORMTABELBARANG.TXTNOMOR.Value = "" Then
+Call MsgBox("Harap pilih data yang akan diubah", vbInformation, "Pilih Data")
+Else
+UBAHDATA.Offset(0, 1).Value = Me.TXTKODEBARANG.Value
+UBAHDATA.Offset(0, 2).Value = Me.TXTNAMA.Value
+UBAHDATA.Offset(0, 3).Value = Me.CBJENIS.Value
+UBAHDATA.Offset(0, 4).Value = Me.CBSATUAN.Value
+UBAHDATA.Offset(0, 5).Value = Me.TXTSTOK.Value
+UBAHDATA.Offset(0, 6).Value = Me.TXTREORDER.Value
+UBAHDATA.Offset(0, 7).Value = Me.TXTSTATUS.Value
+UBAHDATA.Offset(0, 8).Value = Me.TXTHARGA.Value
+UBAHDATA.Offset(0, 9).Value = Me.TXTJUAL.Value
+UBAHDATA.Offset(0, 10).Value = Me.TXTPROFIT.Value
+FORMTABELBARANG.TABELDATA.Value = ""
+FORMTABELBARANG.TXTNOMOR.Value = ""
+Me.CMDSAVE.Enabled = True
+Call BukaGrafik
+'Perintah membuat pesan dan membersihkan form saat data berhasil diubah
+Call MsgBox("Data berhasil diubah", vbInformation, "Ubah Data")
+Me.TXTKODEBARANG.Value = ""
+Me.TXTNAMA.Value = ""
+Me.CBJENIS.Value = ""
+Me.CBSATUAN.Value = ""
+Me.TXTSTOK.Value = ""
+Me.TXTREORDER.Value = ""
+Me.TXTSTATUS.Value = ""
+Me.TXTHARGA.Value = ""
+Me.TXTJUAL.Value = ""
+Me.TXTPROFIT.Value = ""
+
+End If
+
+End Sub
+Private Sub AmbilData()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet1.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet1.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMTABELBARANG.TABELDATA.RowSource = ""
+Else
+FORMTABELBARANG.TABELDATA.RowSource = "DATABARANG!A6:K" & iRow
+End If
+End Sub
+Private Sub TXTHARGA_AfterUpdate()
+On Error Resume Next
+Dim A As Currency
+Dim B As Currency
+A = Me.TXTHARGA.Value
+B = Me.TXTJUAL.Value
+
+Me.TXTPROFIT.Value = B - A
+Me.TXTHARGA.Value = Format(Me.TXTHARGA.Value, "#,###")
+Me.TXTJUAL.Value = Format(Me.TXTJUAL.Value, "#,###")
+Me.TXTPROFIT.Value = Format(Me.TXTPROFIT.Value, "#,###")
+
+End Sub
+
+Private Sub TXTHARGA_Change()
+Me.TXTHARGA.Value = Format(Me.TXTHARGA.Value, "#,###")
+
+End Sub
+
+Private Sub TXTJUAL_AfterUpdate()
+On Error Resume Next
+Dim A As Currency
+Dim B As Currency
+A = Me.TXTHARGA.Value
+B = Me.TXTJUAL.Value
+
+Me.TXTPROFIT.Value = B - A
+
+End Sub
+
+Private Sub TXTJUAL_Change()
+Me.TXTJUAL.Value = Format(Me.TXTJUAL.Value, "#,###")
+
+End Sub
+
+Private Sub TXTPROFIT_Change()
+Me.TXTPROFIT.Value = Format(Me.TXTPROFIT.Value, "#,###")
+End Sub
+
+
+Private Sub UserForm_Initialize()
+Call AmbilJenis
+Call AmbilSatuan
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+FORMTABELBARANG.TABELDATA.Value = ""
+FORMTABELBARANG.TXTNOMOR.Value = ""
+FORMTABELBARANG.CMDADD.Enabled = True
+
+End Sub
+Private Sub AmbilJenis()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet6.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet6.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMBARANG.CBJENIS.RowSource = ""
+Else
+FORMBARANG.CBJENIS.RowSource = "JENIS!A6:A" & iRow
+End If
+End Sub
+Private Sub AmbilSatuan()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet7.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet7.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMBARANG.CBSATUAN.RowSource = ""
+Else
+FORMBARANG.CBSATUAN.RowSource = "SATUAN!A6:A" & iRow
+End If
+End Sub
+
+Private Sub BukaGrafik()
+On Error GoTo EXCELVBA
+Set GR1 = Sheet11.ChartObjects("GRAFIK1").Chart
+Set GR2 = Sheet11.ChartObjects("GRAFIK2").Chart
+
+
+GR1.Parent.Width = 588
+GR1.Parent.Height = 216
+
+GR2.Parent.Width = 216
+GR2.Parent.Height = 198
+
+
+Gambar1 = ThisWorkbook.Path & "\" & "mychart1.JPEG"
+Gambar2 = ThisWorkbook.Path & "\" & "mychart2.JPEG"
+
+GR1.Export FileName:=Gambar1, Filtername:="JPEG"
+GR2.Export FileName:=Gambar2, Filtername:="JPEG"
+
+FORMTABELBARANG.Image1.Picture = LoadPicture(Gambar1)
+FORMTABELBARANG.Image2.Picture = LoadPicture(Gambar2)
+
+FORMTABELBARANG.LBTOTAL.Caption = Sheet11.Range("C26").Value
+FORMTABELBARANG.LBIN.Caption = Sheet11.Range("C20").Value
+FORMTABELBARANG.LBOUT.Caption = Sheet11.Range("D20").Value
+FORMTABELBARANG.LBNILAI.Caption = Format(Sheet11.Range("C23").Value, "#,###")
+FORMTABELBARANG.LBPROFIT.Caption = Format(Sheet11.Range("C24").Value, "#,###")
+FORMTABELBARANG.LBSTOK.Caption = Sheet11.Range("E20").Value
+
+
+Exit Sub
+EXCELVBA:
+Call MsgBox("Harap buat folder di Drive C:\DATABASE\FOTOBARANG", vbInformation, "Folder Tidak Ditemukan")
+
+End Sub

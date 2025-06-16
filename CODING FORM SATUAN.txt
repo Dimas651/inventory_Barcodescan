@@ -1,0 +1,92 @@
+---------------------------------------------------
+CODING FORM SATUAN | EXCEL & VBA TUTORIAL
+---------------------------------------------------
+
+
+Option Explicit
+Private Sub AmbilData()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet7.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet7.Range("A6:A10000"))
+If DBBARANG = 0 Then
+Me.TABELDATA.RowSource = ""
+Else
+Me.TABELDATA.RowSource = "SATUAN!A6:A" & iRow
+End If
+End Sub
+Private Sub AmbilSatuan()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet7.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet7.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMBARANG.CBSATUAN.RowSource = ""
+Else
+FORMBARANG.CBSATUAN.RowSource = "SATUAN!A6:A" & iRow
+End If
+End Sub
+Private Sub CMDHAPUS_Click()
+If Me.TXTJENIS.Value = "" Then
+Call MsgBox("Pilih data pada tabel data", vbInformation, "Hapus Data")
+Else
+Select Case MsgBox("Anda akan menghapus data" _
+& vbCrLf & "Apakah anda yakin?" _
+, vbYesNo Or vbQuestion Or vbDefaultButton1, "Hapus data")
+Case vbNo
+Exit Sub
+Case vbYes
+End Select
+Sheet7.Select
+Me.TABELDATA.Value = ""
+Me.TXTJENIS.Value = ""
+Selection.EntireRow.Delete
+Sheet4.Select
+End If
+Call AmbilData
+End Sub
+
+Private Sub CMDSAVE_Click()
+Dim DBJENIS As Object
+Set DBJENIS = Sheet7.Range("A100").End(xlUp)
+If Me.TXTJENIS.Value = "" Then
+Call MsgBox("Harap isi terlebih dahulu jenis barang", vbInformation, "Jenis Barang")
+Else
+DBJENIS.Offset(1, 0).Value = Me.TXTJENIS.Value
+Call AmbilData
+Me.TXTJENIS.Value = ""
+End If
+Call AmbilSatuan
+
+End Sub
+
+Private Sub CMDUPDATE_Click()
+
+End Sub
+
+Private Sub TABELDATA_Click()
+On Error GoTo ERWIN
+'Perintah membuat variable hapus data
+Dim SumberData, CELLAKTIF As String
+
+'Perintah memasukkan data dari lisbox ke textbox
+Me.TXTJENIS.Value = Me.TABELDATA.Value
+
+Sheet7.Select
+SumberData = Sheets("SATUAN").Cells(Rows.Count, "A").End(xlUp).Row
+Sheets("SATUAN").Range("A6:A" & SumberData).Find(What:=Me.TXTJENIS.Value, LookIn:=xlValues, LookAt:=xlWhole).Activate
+CELLAKTIF = ActiveCell.Row
+Sheet4.Select
+
+Exit Sub
+ERWIN:
+Call MsgBox("Harap pilih data pada tabel data", vbInformation, "Pilih Data")
+
+End Sub
+
+Private Sub UserForm_Initialize()
+Call AmbilData
+Call AmbilSatuan
+
+End Sub
+

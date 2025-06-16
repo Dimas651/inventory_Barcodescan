@@ -1,0 +1,276 @@
+---------------------------------------------------
+CODING FORM SATUAN | EXCEL & VBA TUTORIAL
+---------------------------------------------------
+
+Option Explicit
+Dim GR1, GR2 As Chart
+Dim Gambar1, Gambar2 As String
+
+Private Sub CBTAHUN_Change()
+Sheet11.Range("E5").Value = Me.CBTAHUN.Value
+Call BukaGrafik
+End Sub
+
+Private Sub CMDADD_Click()
+FORMBARANG.Show
+End Sub
+
+Private Sub CMDBUKASHEET_Click()
+Application.Visible = True
+Unload Me
+End Sub
+
+Private Sub CMDCARI_Click()
+On Error GoTo EXCELVBA
+Me.TABELDATA.Value = ""
+Me.TXTNOMOR.Value = ""
+Dim DBCARIDATA As Object
+Set DBCARIDATA = Sheet1
+Sheet8.Range("M5").Value = Me.CBBERDASARKAN.Value
+Sheet8.Range("M6").Value = Me.TXTKATAKUNCI.Value
+DBCARIDATA.Range("A5").CurrentRegion.AdvancedFilter Action:=xlFilterCopy, CriteriaRange:= _
+Sheet8.Range("M5:M6"), Copytorange:=Sheet8.Range("A5:K5"), Unique:=False
+Call HasilCari
+Exit Sub
+EXCELVBA:
+Call MsgBox("Data tidak ditemukan", vbInformation, "Cari Data")
+
+End Sub
+Private Sub HasilCari()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet8.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet8.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMTABELBARANG.TABELDATA.RowSource = ""
+Else
+FORMTABELBARANG.TABELDATA.RowSource = "CARIBARANG!A6:K" & iRow
+End If
+End Sub
+
+Private Sub CMDDASHBOARD_Click()
+Me.MultiPage1.Value = 0
+End Sub
+
+Private Sub CMDEXIT_Click()
+Select Case MsgBox("Anda akan keluar dari aplikasi" _
+& vbCrLf & "Apakah anda yakin?" _
+, vbYesNo Or vbQuestion Or vbDefaultButton1, "Keluar")
+Case vbNo
+Exit Sub
+Case vbYes
+End Select
+ThisWorkbook.Save
+Application.Visible = True
+Unload Me
+ThisWorkbook.Close
+End Sub
+
+Private Sub CMDHAPUS_Click()
+If Me.TXTNOMOR.Value = "" Then
+Call MsgBox("Pilih data pada tabel data", vbInformation, "Hapus Data")
+Else
+Select Case MsgBox("Anda akan menghapus data" _
+& vbCrLf & "Apakah anda yakin?" _
+, vbYesNo Or vbQuestion Or vbDefaultButton1, "Hapus data")
+Case vbNo
+Exit Sub
+Case vbYes
+End Select
+Sheet1.Select
+Me.TABELDATA.Value = ""
+Me.TXTNOMOR.Value = ""
+Selection.EntireRow.Delete
+Sheet4.Select
+End If
+Me.CMDADD.Enabled = True
+
+Call AmbilData
+
+End Sub
+
+Private Sub CMDKELUAR_Click()
+FORMKELUAR.Show
+End Sub
+
+Private Sub CMDMASUK_Click()
+FORMMASUK.Show
+End Sub
+
+Private Sub CMDPRODUK_Click()
+Me.MultiPage1.Value = 1
+End Sub
+
+Private Sub CMDRESET_Click()
+Me.TABELDATA.Value = ""
+Me.TXTNOMOR.Value = ""
+Me.CBBERDASARKAN.Value = ""
+Me.TXTKATAKUNCI.Value = ""
+Me.OPTNO.Value = False
+Me.OPTYES.Value = False
+Call AmbilData
+End Sub
+
+Private Sub CMDSAVE_Click()
+Call BukaGrafik
+End Sub
+
+Private Sub CMDSIMPAN_Click()
+ThisWorkbook.Save
+End Sub
+
+Private Sub CMDUPDATE_Click()
+On Error GoTo EXCELVBA
+If Me.TXTNOMOR.Value = "" Then
+Call MsgBox("Pilih data yang akan diupdate terlebih dahulu", vbInformation, "Update Data")
+Else
+With FORMBARANG
+.TXTKODEBARANG.Value = Me.TABELDATA.Column(1)
+.TXTNAMA.Value = Me.TABELDATA.Column(2)
+.CBJENIS.Value = Me.TABELDATA.Column(3)
+.CBSATUAN.Value = Me.TABELDATA.Column(4)
+.TXTSTOK.Value = Me.TABELDATA.Column(5)
+.TXTREORDER.Value = Me.TABELDATA.Column(6)
+.TXTSTATUS.Value = Me.TABELDATA.Column(7)
+.TXTHARGA.Value = Me.TABELDATA.Column(8)
+.TXTJUAL.Value = Me.TABELDATA.Column(9)
+.TXTPROFIT.Value = Me.TABELDATA.Column(10)
+.CMDSAVE.Enabled = False
+End With
+FORMBARANG.Show
+End If
+Exit Sub
+EXCELVBA:
+Call MsgBox("Harap pilih data yang akan diupdate", vbInformation, "Update Data")
+
+End Sub
+
+Private Sub CommandButton1_Click()
+Application.Visible = True
+Unload Me
+End Sub
+
+Private Sub OPTNO_Click()
+On Error GoTo EXCELVBA
+Me.TABELDATA.Value = ""
+Me.TXTNOMOR.Value = ""
+Dim DBCARIDATA As Object
+Set DBCARIDATA = Sheet1
+Sheet8.Range("O6").Value = "No"
+DBCARIDATA.Range("A5").CurrentRegion.AdvancedFilter Action:=xlFilterCopy, CriteriaRange:= _
+Sheet8.Range("O5:O6"), Copytorange:=Sheet8.Range("A5:K5"), Unique:=False
+Call HasilCari
+Exit Sub
+EXCELVBA:
+Call MsgBox("Data tidak ditemukan", vbInformation, "Cari Data")
+
+End Sub
+
+Private Sub OPTYES_Click()
+On Error GoTo EXCELVBA
+Me.TABELDATA.Value = ""
+Me.TXTNOMOR.Value = ""
+Dim DBCARIDATA As Object
+Set DBCARIDATA = Sheet1
+Sheet8.Range("O6").Value = "Yes"
+DBCARIDATA.Range("A5").CurrentRegion.AdvancedFilter Action:=xlFilterCopy, CriteriaRange:= _
+Sheet8.Range("O5:O6"), Copytorange:=Sheet8.Range("A5:K5"), Unique:=False
+Call HasilCari
+Exit Sub
+EXCELVBA:
+Call MsgBox("Data tidak ditemukan", vbInformation, "Cari Data")
+
+End Sub
+
+Private Sub TABELDATA_Click()
+On Error GoTo ERWIN
+'Perintah membuat variable hapus data
+Dim SumberData, CELLAKTIF As String
+
+'Perintah memasukkan data dari lisbox ke textbox
+Me.TXTNOMOR.Value = Me.TABELDATA.Value
+'Perintah menghapus data
+Sheet1.Select
+SumberData = Sheets("DATABARANG").Cells(Rows.Count, "A").End(xlUp).Row
+Sheets("DATABARANG").Range("A6:A" & SumberData).Find(What:=Me.TXTNOMOR.Value, LookIn:=xlValues, LookAt:=xlWhole).Activate
+CELLAKTIF = ActiveCell.Row
+Sheet1.Select
+Me.CMDADD.Enabled = False
+Exit Sub
+ERWIN:
+Call MsgBox("Harap pilih data pada tabel data", vbInformation, "Pilih Data")
+
+End Sub
+
+Private Sub UserForm_Initialize()
+Call AmbilData
+With CBBERDASARKAN
+.AddItem "Kode Barang"
+.AddItem "Nama Barang"
+.AddItem "Jenis Barang"
+.AddItem "Satuan"
+End With
+Call BukaGrafik
+With CBTAHUN
+.AddItem "2022"
+.AddItem "2023"
+.AddItem "2024"
+.AddItem "2025"
+.AddItem "2026"
+.AddItem "2027"
+End With
+Me.MultiPage1.Value = 0
+End Sub
+Private Sub AmbilData()
+Dim DBBARANG As Long
+Dim iRow As Long
+iRow = Sheet1.Range("A" & Rows.Count).End(xlUp).Row
+DBBARANG = Application.WorksheetFunction.CountA(Sheet1.Range("A6:A10000"))
+If DBBARANG = 0 Then
+FORMTABELBARANG.TABELDATA.RowSource = ""
+Else
+FORMTABELBARANG.TABELDATA.RowSource = "DATABARANG!A6:K" & iRow
+End If
+End Sub
+Private Sub BukaGrafik()
+On Error GoTo EXCELVBA
+Set GR1 = Sheet11.ChartObjects("GRAFIK1").Chart
+Set GR2 = Sheet11.ChartObjects("GRAFIK2").Chart
+
+
+GR1.Parent.Width = 588
+GR1.Parent.Height = 216
+
+GR2.Parent.Width = 216
+GR2.Parent.Height = 198
+
+
+Gambar1 = ThisWorkbook.Path & "\" & "mychart1.JPEG"
+Gambar2 = ThisWorkbook.Path & "\" & "mychart2.JPEG"
+
+GR1.Export FileName:=Gambar1, Filtername:="JPEG"
+GR2.Export FileName:=Gambar2, Filtername:="JPEG"
+
+FORMTABELBARANG.Image1.Picture = LoadPicture(Gambar1)
+FORMTABELBARANG.Image2.Picture = LoadPicture(Gambar2)
+
+FORMTABELBARANG.LBTOTAL.Caption = Sheet11.Range("C26").Value
+FORMTABELBARANG.LBIN.Caption = Sheet11.Range("C20").Value
+FORMTABELBARANG.LBOUT.Caption = Sheet11.Range("D20").Value
+FORMTABELBARANG.LBNILAI.Caption = Format(Sheet11.Range("C23").Value, "#,###")
+FORMTABELBARANG.LBPROFIT.Caption = Format(Sheet11.Range("C24").Value, "#,###")
+FORMTABELBARANG.LBSTOK.Caption = Sheet11.Range("E20").Value
+
+
+Exit Sub
+EXCELVBA:
+Call MsgBox("Harap buat folder di Drive C:\DATABASE\FOTOBARANG", vbInformation, "Folder Tidak Ditemukan")
+
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+If CloseMode = 0 Then
+Cancel = True
+End If
+
+End Sub
